@@ -8,7 +8,6 @@ const { currTime, sleep } = require("./utils/utils");
 const https = require('https') // TODO: use https when in production
 const crypto = require('crypto')
 
-
 async function getLatestRecordedBlockNumber() {
     try {
         let latestBlockNumberRow = await configs.findOne({
