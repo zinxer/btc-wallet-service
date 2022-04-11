@@ -71,4 +71,4 @@ const wallets = db.define("wallets", {
     masterPK: sequelize.STRING
 })
 
-module.exports = { configs, wallets, deposits }
+module.exports = { db, configs, wallets, deposits }

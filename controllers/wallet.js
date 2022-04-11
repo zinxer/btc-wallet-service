@@ -1,13 +1,29 @@
-const { NodeClient, WalletClient, Network } = require("bcoin");
 const { configs, deposits } = require("../models/db");
 
+// bcoin initialisation
+const { NodeClient, WalletClient, Network } = require("bcoin");
+const network = Network.get(process.env.BCOIN_NETWORK);
 
+const walletOptions = {
+  host: process.env.BCOIN_HOST,
+  network: network.type,
+  port: Number(process.env.BCOIN_WALLET_PORT),
+  apiKey: process.env.BCOIN_WALLET_API_KEY,
+};
 
+const nodeOptions = {
+  host: process.env.BCOIN_HOST,
+  network: network.type,
+  port: Number(process.env.BCOIN_NODE_PORT),
+  apiKey: process.env.BCOIN_NODE_API_KEY,
+};
 
-
-
-
-
+const walletClient = new WalletClient(walletOptions);
+const nodeClient = new NodeClient(nodeOptions);
+const options = {
+  witness: false,
+  watchOnly: true,
+};
 
 async function getLatestRecordedBlockNumber() {
     try {
@@ -23,7 +39,7 @@ async function getLatestRecordedBlockNumber() {
         if ((currentTime - updatedAt) < duration) {
             return Number(latestBlockNumber)
         } else {
-            latestBlockNumber = await web3.eth.getBlockNumber()
+            latestBlockNumber = await nodeClient.execute("getblockcount")
             await latestBlockNumberRow.update({ value: latestBlockNumber })
             return Number(latestBlockNumber)
         }

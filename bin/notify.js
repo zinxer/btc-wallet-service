@@ -5,32 +5,9 @@
 require("dotenv").config();
 const { configs, deposits } = require("../models/db");
 const { currTime, sleep } = require("./utils/utils");
+const { getLatestRecordedBlockNumber } = require('../controllers/wallet')
 const https = require('https') // TODO: use https when in production
 const crypto = require('crypto')
-
-async function getLatestRecordedBlockNumber() {
-    try {
-        let latestBlockNumberRow = await configs.findOne({
-            where: {
-                key: 'latestBlockNumber'
-            }
-        })
-        let latestBlockNumber = latestBlockNumberRow.value
-        var currentTime = Date.now();
-        var updatedAt = new Date(latestBlockNumberRow.updatedAt).getTime()
-        var duration = 20 * 1000 // 20 seconds
-        if ((currentTime - updatedAt) < duration) {
-            return Number(latestBlockNumber)
-        } else {
-            // TODO: bcoin get latest block number
-            latestBlockNumber = await web3.eth.getBlockNumber()
-            await latestBlockNumberRow.update({ value: latestBlockNumber })
-            return Number(latestBlockNumber)
-        }
-    } catch (error) {
-        throw error
-    }
-}
 
 async function notify(body) {
     const data = JSON.stringify(body)
