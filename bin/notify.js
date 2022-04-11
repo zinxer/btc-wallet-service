@@ -3,13 +3,35 @@
 * Use https://webhook.site/ to test webhook
 */
 require("dotenv").config();
-const { db, wallets, configs, withdrawals, deposits } = require("../models/db");
+const { configs, deposits } = require("../models/db");
 const { currTime, sleep } = require("./utils/utils");
-const { getLatestRecordedBlockNumber } = require('./scheduleSweep')
 const https = require('https') // TODO: use https when in production
 const crypto = require('crypto')
-const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
-const web3 = createAlchemyWeb3(`https://${process.env.WEB3_NETWORK}.alchemyapi.io/v2/${process.env.ALCH_KEY}`);
+
+
+async function getLatestRecordedBlockNumber() {
+    try {
+        let latestBlockNumberRow = await configs.findOne({
+            where: {
+                key: 'latestBlockNumber'
+            }
+        })
+        let latestBlockNumber = latestBlockNumberRow.value
+        var currentTime = Date.now();
+        var updatedAt = new Date(latestBlockNumberRow.updatedAt).getTime()
+        var duration = 20 * 1000 // 20 seconds
+        if ((currentTime - updatedAt) < duration) {
+            return Number(latestBlockNumber)
+        } else {
+            // TODO: bcoin get latest block number
+            latestBlockNumber = await web3.eth.getBlockNumber()
+            await latestBlockNumberRow.update({ value: latestBlockNumber })
+            return Number(latestBlockNumber)
+        }
+    } catch (error) {
+        throw error
+    }
+}
 
 async function notify(body) {
     const data = JSON.stringify(body)
@@ -104,40 +126,11 @@ async function notifyDeposits(depositTxs) {
     }
 }
 
-async function notifyWithdrawals(withdrawalTxs) {
-    try {
-        withdrawalTxs = await preCheckNotify(withdrawalTxs)
-        if (withdrawalTxs.length == 0) { return }
-        for (var withdrawal of withdrawalTxs) {
-            notify({
-                type: 'WITHDRAWAL',
-                network: 'ETHEREUM',
-                status: 'SUCCESS',
-                uuid: withdrawal.uuid,
-                hash: withdrawal.hash,
-                from: withdrawal.fromAddress,
-                to: withdrawal.toAddress,
-                contract: withdrawal.contractAddress,
-                value: withdrawal.value
-            }).then((resultNotify) => {
-                if (resultNotify.status) {
-                    withdrawals.update({ isNotified: true }, { where: { hash: resultNotify.hash } })
-                }
-            })
-        }
-    } catch (error) {
-        console.log(`-E- ${currTime()}`, "Error in notifyWithdrawals.", error)
-        return
-    }
-}
-
 async function run() {
     try {
         let depositTxs = await deposits.findAll({ where: { isNotified: false } })
-        let withdrawalTxs = await withdrawals.findAll({ where: { isNotified: false, status: 'SUCCESS', isReplaced: false } })
 
         notifyDeposits(depositTxs)
-        notifyWithdrawals(withdrawalTxs)
 
         //recursion
         await sleep(process.env.NOTIFY_SLEEP)
@@ -147,22 +140,4 @@ async function run() {
     }
 }
 
-async function notifyWithdrawalPending(withdrawalTxs) {
-    try {
-        if (withdrawalTxs.length == 0) { return }
-        for (var withdrawal of withdrawalTxs) {
-            notify({
-                type: 'WITHDRAWAL',
-                network: 'ETHEREUM',
-                status: 'PENDING',
-                uuid: withdrawal.uuid,
-                hash: withdrawal.hash
-            })
-        }
-    } catch (error) {
-        console.log(`-E- ${currTime()}`, "Error in notifyWithdrawals.", error)
-        return
-    }
-}
-
-module.exports = { run, notifyWithdrawalPending }
+module.exports = { run }
