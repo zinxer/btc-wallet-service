@@ -101,7 +101,7 @@ const processCallback = async (id, tx) => {
         ]);
         for (let detail of transaction.details) {
             if (detail.category === "receive") {
-                console.log({
+                console.log(`-I- ${currTime()} Deposit detected `, {
                     walletId: id,
                     toAddress: detail.address,
                     value: String(detail.amount),
