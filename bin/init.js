@@ -1,4 +1,4 @@
-const { configs, deposits } = require("../models/db");
+const { Op, configs, wallets, deposits } = require("../models/db");
 const { errorServer, logError, currTime } = require("../bin/utils/utils");
 
 // bcoin initialisation
@@ -45,21 +45,51 @@ async function createWallet() {
     }
 }
 
-async function getWatchedWalletAddresses() {
+async function getBcoinWatchedWalletAddresses() {
     try {
-        const id = (await configs.findOne({ where: { key: 'bcoin_wallet_id' } })).value
         const result = await walletClient.execute('listreceivedbyaddress', [1, true, true])
-        return result
+
+        let bcoinAddresses = []
+        for (let address of result) {
+            bcoinAddresses.push(address.address)
+        }
+        return bcoinAddresses
     } catch (error) {
         throw error
     }
 }
 
-async function importAddresses() {
+async function bcoin_syncWatchAddresses() {
     try {
-        const walletAddresses = await getWatchedWalletAddresses()
-        //console.log("mpragasa", walletAddresses)
+        const id = (await configs.findOne({ where: { key: 'bcoin_wallet_id' } })).value
+        const walletAddresses = await getBcoinWatchedWalletAddresses()
+        var unsyncedAddresses = []
 
+        if (walletAddresses) {
+            unsyncedAddresses = await wallets.findAll({
+                attributes: ['address'],
+                where: {
+                    address: {
+                        [Op.notIn]: walletAddresses
+                    }
+                },
+                raw: true
+            }).then(rows => rows.map(row => row.address))
+        } else {
+            unsyncedAddresses = await wallets.findAll({
+                attributes: ['address'],
+                raw: true
+            }).then(rows => rows.map(row => row.address))
+        }
+
+        if (unsyncedAddresses.length > 0) {
+            // import address into bcoin
+            const wallet = walletClient.wallet(id);
+            for (let address of unsyncedAddresses) {
+                console.log(address)
+            }
+            //await wallet.importAddress(account, address);
+        }
     } catch (error) {
         throw error
     }
@@ -70,7 +100,7 @@ async function init() {
     await Promise.all([
         createWallet(), // check if wallet created on Node (from xpub), create the wallet if it's not created.
         //importAddress()
-        importAddresses()
+        bcoin_syncWatchAddresses()
     ])
     console.log(`-I- ${currTime()}`, `Init: Complete.`)
     return

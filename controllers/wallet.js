@@ -64,16 +64,16 @@ async function create(req, res) {
     try {
         const [xpubKey, id] = await getXpubKeyAndId()
         const wallet = walletClient.wallet(id);
-        const { address } = await wallet.createAddress("default");
-
-        //store address in DB
-        await wallets.upsert({
-            address: address,
-            walletId: id,
-            masterPK: xpubKey
-        })
-
-        return res.status(200).json({ address: address })
+        await wallet.createAddress("default")
+            .then(async ({address}) => {
+                //store address in DB
+                await wallets.upsert({
+                    address: address,
+                    walletId: id,
+                    masterPK: xpubKey
+                })
+                return res.status(200).json({ address: address })
+            })
     } catch (error) {
         logError(error)
         return errorServer(res, "E01 - Error at wallet create.")
