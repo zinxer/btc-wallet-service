@@ -29,7 +29,7 @@ const options = {
 
 async function createWallet() {
     try {
-        const xpubKey = (await configs.findOne({ where: { key: process.env.BCOIN_NETWORK = 'testnet' ? 'testnet_xpub' : 'legacy_xpub' } })).value
+        const xpubKey = (await configs.findOne({ where: { key: process.env.BCOIN_NETWORK == 'testnet' ? 'testnet_xpub' : 'legacy_xpub' } })).value
         const id = (await configs.findOne({ where: { key: 'bcoin_wallet_id' } })).value
 
         //first check if wallet exist

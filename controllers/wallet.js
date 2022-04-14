@@ -52,7 +52,7 @@ async function getLatestRecordedBlockNumber() {
 async function getXpubKeyAndId() {
     try {
         return [
-            (await configs.findOne({ where: { key: process.env.BCOIN_NETWORK = 'testnet' ? 'testnet_xpub' : 'legacy_xpub' } })).value,
+            (await configs.findOne({ where: { key: process.env.BCOIN_NETWORK == 'testnet' ? 'testnet_xpub' : 'legacy_xpub' } })).value,
             (await configs.findOne({ where: { key: 'bcoin_wallet_id' } })).value
         ]
     } catch (error) {
@@ -91,5 +91,57 @@ async function resync(req, res) {
         return errorServer(res, "E02 - Error at resync")
     }
 }
+
+const processCallback = async (id, tx) => {
+    try {
+        await walletClient.execute("selectwallet", [id]);
+        const transaction = await walletClient.execute("gettransaction", [
+            tx.hash,
+            true,
+        ]);
+        for (let detail of transaction.details) {
+            if (detail.category === "receive") {
+                console.log({
+                    walletId: id,
+                    toAddress: detail.address,
+                    value: String(detail.amount),
+                    blockNum: String(tx.height),
+                    hash: transaction.txid,
+                    txTime: String(tx.time),
+                    txDate: tx.date,
+                    confirmations: String(tx.confirmations),
+                })
+
+                await deposits.upsert({
+                    walletId: id,
+                    toAddress: detail.address,
+                    value: String(detail.amount),
+                    blockNum: String(tx.height),
+                    hash: transaction.txid,
+                    txTime: String(tx.time),
+                    txDate: tx.date,
+                    confirmations: String(tx.confirmations),
+                })
+
+            }
+        }
+    } catch (error) {
+        console.log(error.response ? error.response.data : error);
+        throw error;
+    }
+};
+
+const watchConfirmedTxs = async (walletClient) => {
+    try {
+        await walletClient.open();
+        await walletClient.join("*");
+        // Listen for new transactions
+        walletClient.bind("confirmed", processCallback);
+    } catch (error) {
+        logError(error)
+    }
+};
+
+watchConfirmedTxs(walletClient);
 
 module.exports = { getLatestRecordedBlockNumber, create, resync }

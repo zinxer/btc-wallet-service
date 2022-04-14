@@ -27,6 +27,7 @@ db.authenticate().then(async () => {
     // app retart initialisations
     await init()
     const notify = require('./bin/notify'); notify.run()
+    const updateConfirmations = require('./bin/updateConfirmations'); updateConfirmations.run()
 })
     .catch(err => {
         console.error("\x1b[31m%s\x1b[0m", '-E- Unable to connect to the SQL database:', err)

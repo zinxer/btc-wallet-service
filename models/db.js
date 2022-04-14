@@ -54,8 +54,10 @@ const deposits = db.define("deposits", {
     toAddress: sequelize.STRING,
     blockNum: sequelize.STRING,
     value: sequelize.STRING,
-    asset: sequelize.STRING,
-    decimals: sequelize.INTEGER
+    walletId: sequelize.STRING,
+    txTime: sequelize.STRING,
+    txDate: sequelize.STRING,
+    confirmations: sequelize.STRING,
 })
 
 const wallets = db.define("wallets", {
