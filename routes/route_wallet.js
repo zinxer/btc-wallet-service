@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const wallet = require("../controllers/wallet");
+const { errorHandler, errorInRequest, errorServer, sleep, currTime, hasDuplicates, logError } = require("../bin/utils/utils");
 
 //verify api key
 router.use('/', function (req, res, next) {
@@ -14,6 +15,6 @@ router.use('/', function (req, res, next) {
 })
 
 // .../wallet/create
-//router.route("/create").post(wallet.create)
+router.route("/create").post(wallet.create)
 
 module.exports = router;

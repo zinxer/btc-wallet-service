@@ -12,6 +12,6 @@ const authRL = (count) => {
 //TODO: check for valid JSON string and also suspicious payload
 
 //routes
-router.use('/eth/wallet', authRL(1000), require('./route_wallet'))
+router.use('/btc/wallet', authRL(1000), require('./route_wallet'))
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const { configs, deposits } = require("../models/db");
+const { errorServer, logError } = require("../bin/utils/utils");
 
 // bcoin initialisation
 const { NodeClient, WalletClient, Network } = require("bcoin");
@@ -48,4 +49,15 @@ async function getLatestRecordedBlockNumber() {
     }
 }
 
-module.exports={ getLatestRecordedBlockNumber }
+async function create(req, res){
+    try{
+        
+        return res.status(200).json({ transaction: newWithdrawalTx })
+    }catch(error){
+        logError(error)
+        return errorServer(res, "E01 - Error at wallet create.")
+    }
+}
+
+
+module.exports={ getLatestRecordedBlockNumber, create }

@@ -1,0 +1,6 @@
+curl --location --request POST 'localhost:9002/api/wallet' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "id": "bcoin_test",
+    "xpub": "YOUR_TESTNET_XPUB"
+}'

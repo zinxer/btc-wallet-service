@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require('express')
 const db = require('./models/db').db
 const bodyParser = require('body-parser')
+const { init } = require('./bin/init')
 
 const app = express()
 
@@ -24,6 +25,7 @@ app.listen(port, () => {
 db.authenticate().then(async () => {
     console.log("\x1b[32m%s\x1b[0m", '-I-   SQL connected!');
     // app retart initialisations
+    await init()
     const notify = require('./bin/notify'); notify.run()
 })
     .catch(err => {

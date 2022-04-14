@@ -1,0 +1,2 @@
+curl --location --request POST 'localhost:3003/btc/wallet/create' \
+--header 'x-api-key: ${API_KEY}'
