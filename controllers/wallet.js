@@ -1,5 +1,5 @@
 const { configs, deposits, wallets } = require("../models/db");
-const { errorServer, logError, errorInRequest } = require("../bin/utils/utils");
+const { errorServer, logError, errorInRequest, currTime } = require("../bin/utils/utils");
 
 // bcoin initialisation
 const { NodeClient, WalletClient, Network } = require("bcoin");
