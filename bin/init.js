@@ -58,7 +58,7 @@ async function getWatchedWalletAddresses() {
 async function importAddresses() {
     try {
         const walletAddresses = await getWatchedWalletAddresses()
-        console.log("mpragasa", walletAddresses)
+        //console.log("mpragasa", walletAddresses)
 
     } catch (error) {
         throw error
@@ -68,7 +68,7 @@ async function importAddresses() {
 
 async function init() {
     await Promise.all([
-        createWallet(), // check if wallet created on Node (from xpub)
+        createWallet(), // check if wallet created on Node (from xpub), create the wallet if it's not created.
         //importAddress()
         importAddresses()
     ])

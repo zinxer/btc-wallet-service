@@ -68,6 +68,7 @@ const wallets = db.define("wallets", {
         type: sequelize.STRING,
         primaryKey: true
     },
+    walletId: sequelize.STRING,
     masterPK: sequelize.STRING
 })
 

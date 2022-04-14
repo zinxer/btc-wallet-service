@@ -1,2 +1,0 @@
-curl --location --request POST 'localhost:9002/api/bcoin_test/address' \
---data-raw ''
