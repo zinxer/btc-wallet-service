@@ -1,5 +1,5 @@
 const { configs, deposits, wallets } = require("../models/db");
-const { errorServer, logError } = require("../bin/utils/utils");
+const { errorServer, logError, errorInRequest } = require("../bin/utils/utils");
 
 // bcoin initialisation
 const { NodeClient, WalletClient, Network } = require("bcoin");
@@ -65,7 +65,7 @@ async function create(req, res) {
         const [xpubKey, id] = await getXpubKeyAndId()
         const wallet = walletClient.wallet(id);
         await wallet.createAddress("default")
-            .then(async ({address}) => {
+            .then(async ({ address }) => {
                 //store address in DB
                 await wallets.upsert({
                     address: address,
@@ -80,5 +80,16 @@ async function create(req, res) {
     }
 }
 
+async function resync(req, res) {
+    try {
+        const block = req.body.block || null
+        if (!block) { return errorInRequest(res, "Missing or empty block number param.") }
+        const result = await nodeClient.reset(Number(block) - 1);
+        res.status(200).json({ success: true, block: block });
+    } catch (error) {
+        logError(error)
+        return errorServer(res, "E02 - Error at resync")
+    }
+}
 
-module.exports = { getLatestRecordedBlockNumber, create }
+module.exports = { getLatestRecordedBlockNumber, create, resync }

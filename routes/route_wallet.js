@@ -17,4 +17,7 @@ router.use('/', function (req, res, next) {
 // .../wallet/create
 router.route("/create").post(wallet.create)
 
+// .../wallet/resync
+router.route("/resync").post(wallet.resync)
+
 module.exports = router;

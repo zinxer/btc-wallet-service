@@ -1,0 +1,6 @@
+curl --location --request POST 'localhost:3003/btc/wallet/resync' \
+--header 'x-api-key: ${API_KEY}' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "block": 2195682
+}'
