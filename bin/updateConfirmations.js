@@ -28,9 +28,10 @@ const options = {
 
 async function run() {
     try {
+        const minConfirmations = (await configs.findOne({ where: { key: 'minConfirmations' } })).value
         const id = (await configs.findOne({ where: { key: 'bcoin_wallet_id' } })).value
         const wallet = walletClient.wallet(id);
-        let unconfirmedDepositRows = await deposits.findAll({ where: { confirmations: { [Op.lt]: 3 } } })
+        let unconfirmedDepositRows = await deposits.findAll({ where: { confirmations: { [Op.lt]: minConfirmations } } })
 
         if (unconfirmedDepositRows.length == 0) {
             await sleep(1 * 60 * 1000)

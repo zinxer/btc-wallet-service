@@ -1,9 +1,8 @@
 /*
-* This script is tasked to notify main app of deposit and withdrawal transaction statuses.
+* This script is tasked to notify main app of deposit transaction statuses.
 * Use https://webhook.site/ to test webhook
 */
-require("dotenv").config();
-const { configs, deposits } = require("../models/db");
+const { Op, configs, deposits } = require("../models/db");
 const { currTime, sleep } = require("./utils/utils");
 const { getLatestRecordedBlockNumber } = require('../controllers/wallet')
 const https = require('https') // TODO: use https when in production
@@ -52,44 +51,18 @@ async function notify(body) {
     return await p
 }
 
-async function preCheckNotify(txs) {
-    try {
-        let minConfirmationsRow = await configs.findOne({ where: { key: 'minConfirmations' } })
-        let currBlockNum = await getLatestRecordedBlockNumber()
-        let safeTxs = []
-        if (txs.length !== 0) {
-            for (var tx of txs) {
-                let safeBlockNum = Number(tx.blockNum) + Number(minConfirmationsRow.value)
-                if (safeBlockNum > currBlockNum) {
-                    //Skip iteration as tx had not passed safeBlockNum
-                    continue;
-                } else {
-                    safeTxs.push(tx)
-                }
-            }
-        }
-        return safeTxs
-    } catch (error) {
-        console.log(`-E- ${currTime()}`, "Error at preCheckNotify", error)
-        return []
-    }
-}
-
 async function notifyDeposits(depositTxs) {
     try {
-        depositTxs = await preCheckNotify(depositTxs)
         if (depositTxs.length == 0) { return }
         for (var deposit of depositTxs) {
             notify({
                 type: 'DEPOSIT',
-                network: 'ETHEREUM',
+                network: 'BITCOIN',
                 status: 'SUCCESS',
                 hash: deposit.hash,
                 from: deposit.fromAddress,
                 to: deposit.toAddress,
-                contract: deposit.contractAddress,
-                value: deposit.value,
-                decimals: deposit.decimals
+                value: deposit.value
             }).then((resultNotify) => {
                 if (resultNotify.status) {
                     deposits.update({ isNotified: true }, { where: { hash: resultNotify.hash } })
@@ -104,8 +77,8 @@ async function notifyDeposits(depositTxs) {
 
 async function run() {
     try {
-        let depositTxs = await deposits.findAll({ where: { isNotified: false } })
-
+        const minConfirmations = (await configs.findOne({ where: { key: 'minConfirmations' } })).value
+        let depositTxs = await deposits.findAll({ where: { isNotified: false, confirmations: { [Op.gte]: minConfirmations } } })
         notifyDeposits(depositTxs)
 
         //recursion
