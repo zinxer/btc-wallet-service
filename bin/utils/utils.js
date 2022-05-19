@@ -130,4 +130,4 @@ function hasDuplicates(a) {
     }
   }
 
-module.exports = { sleep, loop, errorHandler, errorInRequest, errorServer, logError, isEmpty, logError, logWarning, currTime, hasDuplicates};
+module.exports = { sleep, loop, errorHandler, errorInRequest, errorServer, logError, isEmpty, logWarning, currTime, hasDuplicates};

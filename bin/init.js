@@ -86,12 +86,12 @@ async function bcoin_syncWatchAddresses() {
             // import address into bcoin
             const wallet = walletClient.wallet(id);
             for (let address of unsyncedAddresses) {
-                console.log(address)
+                //console.log(`-I- ${currTime()} Adding ${address} to bcoin node wallet: ${id}.`)
+                await wallet.importAddress('default', address);
             }
-            //await wallet.importAddress(account, address);
         }
     } catch (error) {
-        throw error
+        //throw error
     }
 }
 
@@ -99,7 +99,6 @@ async function bcoin_syncWatchAddresses() {
 async function init() {
     await Promise.all([
         createWallet(), // check if wallet created on Node (from xpub), create the wallet if it's not created.
-        //importAddress()
         bcoin_syncWatchAddresses()
     ])
     console.log(`-I- ${currTime()}`, `Init: Complete.`)

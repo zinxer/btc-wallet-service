@@ -5,6 +5,7 @@ const fs = require('fs');
 const rdsCa = fs.readFileSync(__dirname + '/rds-ca-2019-root.pem');
 
 const sqlOptions = {
+    port: process.env.DB_PORT ? process.env.DB_PORT : null,
     host: process.env.DB_HOST,
     logging: process.env.DEBUG === "true" ? console.log : false,
     maxConcurrentQueries: 100,
