@@ -3,3 +3,18 @@ node_modules/
 /bin/test.js
 .DS_Store
 *.log
+
+# --- secret guard ---
+bin/test.js
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.keystore
+keystore/
+*.sql.dump
+*.dump
+*.bak
+secrets/
