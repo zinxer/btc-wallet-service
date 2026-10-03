@@ -37,7 +37,7 @@ Bitcoin mainnet and testnet (`BCOIN_NETWORK`). On testnet the API routes are pre
 4. `cp .env.example .env` and fill in the values.
 5. `npm install && node server.js` (there is no `start` script and `npm test` is a stub).
 
-Example requests are in `test/*.curl` (replace the `REDACTED_*` placeholders).
+Example requests are in `test/*.curl` (replace the `YOUR_*` placeholders).
 
 ## Environment variables
 
